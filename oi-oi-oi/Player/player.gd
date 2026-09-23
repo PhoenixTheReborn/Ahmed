@@ -51,6 +51,7 @@ var mouse_sens: float = 0.2
 var Base_FOV: float = 90.0
 var max_hp: int = 100
 var hp: int = 100
+var health_drop_speed: float = 10.0
 
 #------Head bobbing variables------#
 const head_bobbing_sprinting_speed: float = 14.0
@@ -70,6 +71,8 @@ var target_rot_z: float = 0.0
 var lean_distance: float = 0.4
 var lean_tilt: float = 12.0
 
+var in_pause: bool = false
+
 #------State machine------#
 enum PlayerState {
 	IDLE_STAND,
@@ -77,7 +80,8 @@ enum PlayerState {
 	CROUCHING,
 	WALKING,
 	SPRINTING,
-	AIR
+	SPRINTING_AND_JUMPING,
+	AIR,
 }
 
 var player_state: PlayerState = PlayerState.IDLE_STAND
@@ -114,73 +118,80 @@ func _setup_blood_vial() -> void:
 
 func _input(event: InputEvent) -> void:
 	if Input.is_action_just_pressed("Esc"):
-		get_tree().quit()
+		# get_tree().quit()
+		in_pause = !in_pause
 		
-	if event is InputEventMouseMotion:
-		rotate_y(deg_to_rad(-event.relative.x) * mouse_sens)
-		head.rotate_x(deg_to_rad(-event.relative.y) * mouse_sens)
-		head.rotation.x = clamp(head.rotation.x, deg_to_rad(-85), deg_to_rad(85))
-		
-		# Hook mouse motion directly to sloshing physics
-		target_slosh.x -= event.relative.x * mouse_slosh_sensitivity
-		target_slosh.y += event.relative.y * mouse_slosh_sensitivity
-		target_slosh.x = clamp(target_slosh.x, -max_slosh_angle, max_slosh_angle)
-		target_slosh.y = clamp(target_slosh.y, -max_slosh_angle, max_slosh_angle)
-	
-	if Input.is_action_just_pressed("Interact"):
-		if interaction_ray.is_colliding():
-			var target = interaction_ray.get_collider()
+	if not in_pause:
+		if event is InputEventMouseMotion:
+			rotate_y(deg_to_rad(-event.relative.x) * mouse_sens)
+			head.rotate_x(deg_to_rad(-event.relative.y) * mouse_sens)
+			head.rotation.x = clamp(head.rotation.x, deg_to_rad(-85), deg_to_rad(85))
 			
-			if target.is_in_group("Interactable"):
-				if target.has_method("interact"):
-					target.interact()
+			# Hook mouse motion directly to sloshing physics
+			target_slosh.x -= event.relative.x * mouse_slosh_sensitivity
+			target_slosh.y += event.relative.y * mouse_slosh_sensitivity
+			target_slosh.x = clamp(target_slosh.x, -max_slosh_angle, max_slosh_angle)
+			target_slosh.y = clamp(target_slosh.y, -max_slosh_angle, max_slosh_angle)
+		
+		if Input.is_action_just_pressed("Interact"):
+			if interaction_ray.is_colliding():
+				var target = interaction_ray.get_collider()
+				
+				if target.is_in_group("Interactable"):
+					if target.has_method("interact"):
+						target.interact()
 
 func _physics_process(delta: float) -> void:
-	input_dir = Input.get_vector("Strafe L", "Strafe R", "Forward", "Backward")
+	if in_pause:
+		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	else:
+		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	
-	_update_focused_object()
-	updatePlayerState(delta)
-	updateCamera(delta)
-	updateBloodVial(delta) 
+		input_dir = Input.get_vector("Strafe L", "Strafe R", "Forward", "Backward")
+		
+		_update_focused_object()
+		updatePlayerState(delta)
+		updateCamera(delta)
+		updateBloodVial(delta) 
 
-	target_arm_x = 0.0
-	target_rot_z = 0.0
+		target_arm_x = 0.0
+		target_rot_z = 0.0
 
+		if not moving:
+			if Input.is_action_pressed("Lean R"):
+				target_arm_x = lean_distance
+				target_rot_z = -lean_tilt
+			elif Input.is_action_pressed("Lean L"):
+				target_arm_x = -lean_distance
+				target_rot_z = lean_tilt
 
-	if not moving:
-		if Input.is_action_pressed("Lean R"):
-			target_arm_x = lean_distance
-			target_rot_z = -lean_tilt
-		elif Input.is_action_pressed("Lean L"):
-			target_arm_x = -lean_distance
-			target_rot_z = lean_tilt
-
-	lean_arm.position.x = lerp(lean_arm.position.x, target_arm_x, 10.0 * delta)
-	camera_3d.rotation.z = lerp(camera_3d.rotation.z, deg_to_rad(target_rot_z), 10.0 * delta)
-	
-	if not is_on_floor():
-		if velocity.y >= 0:
-			velocity += get_gravity() * delta
+		lean_arm.position.x = lerp(lean_arm.position.x, target_arm_x, 10.0 * delta)
+		camera_3d.rotation.z = lerp(camera_3d.rotation.z, deg_to_rad(target_rot_z), 10.0 * delta)
+		
+		if not is_on_floor():
+			if velocity.y >= 0:
+				velocity += get_gravity() * delta
+			else:
+				velocity += get_gravity() * delta * 2.0
 		else:
-			velocity += get_gravity() * delta * 2.0
-	else:
-		if Input.is_action_just_pressed("Jump"):
-			velocity.y = jump_velocity
+			if PlayerState.SPRINTING: player_state = PlayerState.SPRINTING_AND_JUMPING
+			if Input.is_action_just_pressed("Jump"):
+				velocity.y = jump_velocity
+				#camera_3d.fov = Base_FOV * 1.15
 
-	var target_dir = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
-	if target_dir != Vector3.ZERO:
-		velocity.x = target_dir.x * current_speed
-		velocity.z = target_dir.z * current_speed
-	else:
-		velocity.x = 0.0
-		velocity.z = 0.0
+		var target_dir = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+		if target_dir != Vector3.ZERO:
+			velocity.x = target_dir.x * current_speed
+			velocity.z = target_dir.z * current_speed
+		else:
+			velocity.x = 0.0
+			velocity.z = 0.0
 
-	move_and_slide()
+		move_and_slide()
 
 func updateBloodVial(delta: float) -> void:
 	if not liquid_material:
 		return
-
 
 	var health_ratio: float = clamp(float(hp) / float(max_hp), 0.0, 1.0)
 	liquid_material.set_shader_parameter("health_ratio", health_ratio)
@@ -215,6 +226,8 @@ func updateBloodVial(delta: float) -> void:
 	liquid_material.set_shader_parameter("slosh_angle", current_slosh)
 
 func updatePlayerState(delta: float) -> void:
+	if hp > max_hp: hp = max_hp
+	
 	moving = (input_dir != Vector2.ZERO)
 	
 	if not is_on_floor():
@@ -277,7 +290,7 @@ func updateCamera(delta: float) -> void:
 			target_intensity = head_bobbing_walking_intensity
 			bob_frequency = head_bobbing_walking_speed
 			
-		PlayerState.SPRINTING:
+		PlayerState.SPRINTING, PlayerState.SPRINTING_AND_JUMPING:
 			head.position.y = lerp(head.position.y, 1.8, speed)
 			target_fov = Base_FOV * 1.15
 			target_intensity = head_bobbing_sprinting_intensity
@@ -327,5 +340,17 @@ func _update_focused_object() -> void:
 			current_focused_object.set_focused(true)
 
 func take_damage(damage_amount: int) -> void:
-	hp = clamp(hp - damage_amount, 0, max_hp)
-	print("Player took damage! Current HP: ", hp)
+	var dt := get_process_delta_time()
+	var f := (dt*health_drop_speed)**2
+	var target_hp: int = clamp(hp - damage_amount, 0, max_hp)
+	
+	while hp > target_hp: hp = lerp(hp, target_hp, f)
+	print("Player took", damage_amount, " damage! Current HP: ", hp)
+	
+func heal_hp(heal_amont: int) -> void:
+	var dt := get_process_delta_time()
+	var f := (dt*health_drop_speed)**2
+	if hp < max_hp:
+		hp = lerp(hp + heal_amont, hp, f)
+	else:
+		print("Reached max health")

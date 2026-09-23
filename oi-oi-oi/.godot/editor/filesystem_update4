@@ -1,0 +1,5 @@
+res://Scenes/player.tscn
+res://Player/player.gd
+res://Scenes/test.scn
+res://Scenes/heal.gd
+res://Scenes/backpack.tscn

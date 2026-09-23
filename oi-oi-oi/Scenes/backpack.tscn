@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://btlgq0p4qmcej"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_4rvbt"]
+size = Vector3(0.69732666, 0.47784424, 0.66625977)
+
+[node name="backpack" type="Node3D" unique_id=1454249576]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=2094395745]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D" unique_id=1069193067]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.1552734e-05, 0.5296055, 0.079956055)
+mesh = SubResource("BoxMesh_4rvbt")
