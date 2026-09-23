@@ -1,0 +1,73 @@
+[gd_scene format=3 uid="uid://w5rlxwwkfoom"]
+
+[ext_resource type="Script" uid="uid://djli2d8plrrqb" path="res://Player/player.gd" id="1_v0iea"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_f60y1"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_v0iea"]
+height = 1.0
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_v0iea"]
+radius = 0.2
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_cvnsp"]
+radius = 0.2
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_6t5aa"]
+radius = 10.0
+
+[node name="Player" type="CharacterBody3D" unique_id=1060036559 groups=["Player"]]
+script = ExtResource("1_v0iea")
+
+[node name="StandingCollisionShape" type="CollisionShape3D" parent="." unique_id=752749067]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CapsuleShape3D_f60y1")
+
+[node name="CrouchingCollisionShape" type="CollisionShape3D" parent="." unique_id=1357317329]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("CapsuleShape3D_v0iea")
+
+[node name="LeanChecks" type="Node3D" parent="." unique_id=1673724582]
+
+[node name="LeanCheck" type="ShapeCast3D" parent="LeanChecks" unique_id=822619530]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+enabled = false
+shape = SubResource("SphereShape3D_v0iea")
+target_position = Vector3(1.01, 0, 0)
+
+[node name="LeanCheck2" type="ShapeCast3D" parent="LeanChecks" unique_id=1837709623]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+enabled = false
+shape = SubResource("SphereShape3D_cvnsp")
+target_position = Vector3(-1.01, 0, 0)
+
+[node name="Head" type="Node3D" parent="." unique_id=1840650445]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+
+[node name="LeanArm" type="Node3D" parent="Head" unique_id=1170256246]
+
+[node name="Eyes" type="Node3D" parent="Head/LeanArm" unique_id=1563663661]
+
+[node name="Camera3D" type="Camera3D" parent="Head/LeanArm/Eyes" unique_id=706606218]
+unique_name_in_owner = true
+near = 0.01
+
+[node name="InteractionRay" type="RayCast3D" parent="Head/LeanArm/Eyes/Camera3D" unique_id=644381998 groups=["Player"]]
+target_position = Vector3(0, 0, -2.5)
+collision_mask = 2
+
+[node name="StandupCheck" type="RayCast3D" parent="." unique_id=939105673]
+target_position = Vector3(0, 2, 0)
+
+[node name="GUI" type="Node" parent="." unique_id=1985171424]
+
+[node name="Interactable Area" type="Area3D" parent="." unique_id=573937239]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+collision_layer = 3
+collision_mask = 3
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Interactable Area" unique_id=178671740]
+shape = SubResource("SphereShape3D_6t5aa")
+
+[connection signal="body_entered" from="Interactable Area" to="." method="_on_interactable_area_body_entered"]
+[connection signal="body_exited" from="Interactable Area" to="." method="_on_interactable_area_body_exited"]
