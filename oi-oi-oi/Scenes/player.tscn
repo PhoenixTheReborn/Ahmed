@@ -59,8 +59,6 @@ collision_mask = 2
 [node name="StandupCheck" type="RayCast3D" parent="." unique_id=939105673]
 target_position = Vector3(0, 2, 0)
 
-[node name="GUI" type="Node" parent="." unique_id=1985171424]
-
 [node name="Interactable Area" type="Area3D" parent="." unique_id=573937239]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 collision_layer = 3
@@ -68,6 +66,8 @@ collision_mask = 3
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Interactable Area" unique_id=178671740]
 shape = SubResource("SphereShape3D_6t5aa")
+
+[node name="GUI" type="Node" parent="." unique_id=1985171424]
 
 [connection signal="body_entered" from="Interactable Area" to="." method="_on_interactable_area_body_entered"]
 [connection signal="body_exited" from="Interactable Area" to="." method="_on_interactable_area_body_exited"]

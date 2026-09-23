@@ -204,17 +204,14 @@ func updateBloodVial(delta: float) -> void:
 		passive_wave.y = sin(head_bobbing_index * 2.0) * (slosh_amplitude * 0.6)
 
 
-	target_slosh = target_slosh.move_toward(Vector2.ZERO, slosh_recovery_speed * delta)
+	target_slosh = target_slosh.move_toward(Vector2.ZERO, sqrt(slosh_recovery_speed * delta))
 
 
 	var combined_target = target_slosh + passive_wave
 	combined_target.x = clamp(combined_target.x, -max_slosh_angle, max_slosh_angle)
 	combined_target.y = clamp(combined_target.y, -max_slosh_angle, max_slosh_angle)
 
-
-	current_slosh = current_slosh.lerp(combined_target, slosh_lerp_speed * delta)
-	
-
+	current_slosh = current_slosh.lerp(combined_target, sqrt(slosh_lerp_speed * delta))
 	liquid_material.set_shader_parameter("slosh_angle", current_slosh)
 
 func updatePlayerState(delta: float) -> void:
@@ -248,46 +245,46 @@ func updatePlayerSpeed(_player_state: PlayerState, delta: float) -> void:
 		PlayerState.WALKING, PlayerState.IDLE_STAND:
 			current_speed = walking_speed
 		PlayerState.SPRINTING:
-			if current_speed < walking_speed:
-				current_speed = walking_speed
+			if current_speed < walking_speed:current_speed = walking_speed
 			current_speed = move_toward(current_speed, sprinting_speed, sprint_accel_rate * delta)
 
 func updateCamera(delta: float) -> void:
 	var target_fov = Base_FOV
 	var target_intensity: float = 0.0
 	var bob_frequency: float = 0.0
-
+	var speed := sqrt(delta * lerp_speed)
+	
 	match player_state:
 		PlayerState.CROUCHING:
-			head.position.y = lerp(head.position.y, 1.8 + crouching_depth, delta * lerp_speed)
+			head.position.y = lerp(head.position.y, 1.8 + crouching_depth, speed)
 			target_fov = Base_FOV * 0.95
 			target_intensity = head_bobbing_crouching_intensity
 			bob_frequency = head_bobbing_crouching_speed
 			
 		PlayerState.IDLE_CROUCH:
-			head.position.y = lerp(head.position.y, 1.8 + crouching_depth, delta * lerp_speed)
+			head.position.y = lerp(head.position.y, 1.8 + crouching_depth, speed)
 			target_fov = Base_FOV * 0.95
 			target_intensity = 0.0
 			
 		PlayerState.IDLE_STAND:
-			head.position.y = lerp(head.position.y, 1.8, delta * lerp_speed)
+			head.position.y = lerp(head.position.y, 1.8, speed)
 			target_fov = Base_FOV
 			target_intensity = 0.0
 			
 		PlayerState.WALKING:
-			head.position.y = lerp(head.position.y, 1.8, delta * lerp_speed)
+			head.position.y = lerp(head.position.y, 1.8, speed)
 			target_fov = Base_FOV
 			target_intensity = head_bobbing_walking_intensity
 			bob_frequency = head_bobbing_walking_speed
 			
 		PlayerState.SPRINTING:
-			head.position.y = lerp(head.position.y, 1.8, delta * lerp_speed)
+			head.position.y = lerp(head.position.y, 1.8, speed)
 			target_fov = Base_FOV * 1.15
 			target_intensity = head_bobbing_sprinting_intensity
 			bob_frequency = head_bobbing_sprinting_speed
 
-	camera_3d.fov = lerp(camera_3d.fov, target_fov, delta * lerp_speed)
-	head_bobbing_current_intensity = lerp(head_bobbing_current_intensity, target_intensity, delta * lerp_speed)
+	camera_3d.fov = lerp(camera_3d.fov, target_fov, speed)
+	head_bobbing_current_intensity = lerp(head_bobbing_current_intensity, target_intensity, speed)
 
 	if moving and is_on_floor():
 		head_bobbing_index += bob_frequency * delta
@@ -298,8 +295,8 @@ func updateCamera(delta: float) -> void:
 		camera_3d.position.y = bob_y
 		camera_3d.position.x = bob_x
 	else:
-		camera_3d.position.y = lerp(camera_3d.position.y, 0.0, delta * lerp_speed)
-		camera_3d.position.x = lerp(camera_3d.position.x, 0.0, delta * lerp_speed)
+		camera_3d.position.y = lerp(camera_3d.position.y, 0.0, speed)
+		camera_3d.position.x = lerp(camera_3d.position.x, 0.0, speed)
 
 func interact():
 	pass
