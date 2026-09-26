@@ -69,6 +69,16 @@ const head_bobbing_crouching_intensity: float = 0.02
 var head_bobbing_current_intensity: float = 0.0
 var head_bobbing_index: float = 0.0
 
+#------Landing shake variables------#
+var was_on_floor: bool = true
+var landing_shake_intensity: float = 0.0
+var landing_shake_decay: float = 8.0
+var landing_shake_frequency: float = 35.0
+var landing_shake_index: float = 0.0
+var landing_shake_time: float = 0.0
+const landing_shake_min_fall_speed: float = 3.0   # ignore tiny hops
+const landing_shake_max_intensity: float = 0.15
+
 #------Lean variables-----#
 var target_arm_x: float = 0.0
 var target_rot_z: float = 0.0
@@ -89,7 +99,9 @@ enum PlayerState {
 
 var player_state: PlayerState = PlayerState.IDLE_STAND
 
+
 func _ready() -> void:
+	
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	var gravity_val: float = abs(get_gravity().y)
 	if gravity_val == 0.0:
@@ -98,6 +110,7 @@ func _ready() -> void:
 	interaction_ray.add_exception(self)
 	
 	_setup_blood_vial()
+
 
 func _setup_blood_vial() -> void:
 	# Correct path matching the scene tree: "Blood Vial"
@@ -169,8 +182,24 @@ func _physics_process(delta: float) -> void:
 	else:
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 		backpack.hide()
-			
-		input_dir = Input.get_vector("Strafe L", "Strafe R", "Forward", "Backward")
+		
+		var dx: int = 0
+		var dy: int = 0
+		if Input.is_action_pressed("Backward"):
+			dy = 1
+		elif Input.is_action_pressed("Forward"):
+			dy = -1
+		elif Input.is_action_pressed("Strafe R"):
+			dx = 1
+		elif Input.is_action_pressed("Strafe L"):
+			dx = -1
+		
+		input_dir = Vector2(
+			lerp(0, int(current_speed)*dx, (delta*current_speed)**2),
+			lerp(0, int(current_speed)*dy, (delta*current_speed)**2)
+		)
+		#print(input_dir)
+		
 		_update_focused_object()
 		updatePlayerState(delta)
 		updateCamera(delta)
@@ -207,7 +236,22 @@ func _physics_process(delta: float) -> void:
 			velocity.x = 0.0
 			velocity.z = 0.0
 
+		# Capture fall speed before move_and_slide() zeroes it out on collision
+		var pre_move_y_velocity := velocity.y
+		
 		move_and_slide()
+		
+		# Landing detection
+		var on_floor_now := is_on_floor()
+		if on_floor_now and not was_on_floor:
+			var fall_speed : int = abs(pre_move_y_velocity)
+			if fall_speed >= landing_shake_min_fall_speed:
+				var t: float = clamp(fall_speed / 15.0, 0.0, 1.0)
+				landing_shake_intensity = landing_shake_max_intensity * t
+				landing_shake_index = 0.0
+				landing_shake_time = 0.0
+		was_on_floor = on_floor_now
+		
 		#print(player_state)
 		
 func move_liquide(amplitude: float, delta: float) -> void:
@@ -215,7 +259,7 @@ func move_liquide(amplitude: float, delta: float) -> void:
 	passive_wave.x = cos(head_bobbing_index) * amplitude
 	passive_wave.y = sin(head_bobbing_index * 2.0) * (amplitude * 0.6)
 
-	target_slosh = target_slosh.move_toward(Vector2.ZERO, sqrt(slosh_recovery_speed * delta))
+	target_slosh = target_slosh.move_toward(Vector2.ZERO, sqrt(slosh_recovery_speed * delta*0.5))
 
 	var combined_target := target_slosh + passive_wave
 	combined_target.x = clamp(combined_target.x, -max_slosh_angle, max_slosh_angle)
@@ -335,6 +379,27 @@ func updateCamera(delta: float) -> void:
 	else:
 		camera_3d.position.y = lerp(camera_3d.position.y, 0.0, speed)
 		camera_3d.position.x = lerp(camera_3d.position.x, 0.0, speed)
+	
+	# Landing shake (applied on top of head bob)
+	var shake := updateLandingShake(delta)
+	camera_3d.position += shake
+
+func updateLandingShake(delta: float) -> Vector3:
+	if landing_shake_intensity <= 0.001:
+		landing_shake_intensity = 0.0
+		return Vector3.ZERO
+	
+	landing_shake_time += delta
+	landing_shake_index += landing_shake_frequency * delta
+	
+	# Two slightly different frequencies so it doesn't look like a pure sine
+	var shake_x := sin(landing_shake_index) * landing_shake_intensity*2
+	var shake_y := cos(landing_shake_index * 1.3) * landing_shake_intensity*2 * 0.8
+	
+	# Decay
+	landing_shake_intensity = move_toward(landing_shake_intensity, 0.0, landing_shake_decay * delta)
+	
+	return Vector3(shake_x, shake_y, 0.0)
 
 func interact():
 	pass
