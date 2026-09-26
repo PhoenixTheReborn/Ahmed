@@ -1,5 +1,5 @@
 78098b89c88a74ebe8c20117b8754620
-::res://::1790176124
+::res://::1790424395
 icon.svg::CompressedTexture2D::522874448712642018::1790171533::1790171618::1::::<><><>0<>0<>cdc5f3dc3d7b95a1b867c0babd46e580<>res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.s3tc.ctex::
 ::res://Objects/::1790171533
 Interaction.gdshader::Shader::6211080745653085920::1790171533::0::1::::<><><>0<>0<><>::
@@ -16,16 +16,18 @@ blood_vial.scn::PackedScene::2422235804297073138::1790171533::0::1::::<><><>0<>0
 ::res://Objects/Flashlight/::1790171533
 flashlight.gd::GDScript::7914587503210431775::1790171533::0::1::::<>RigidBody3D<><>0<>0<><>::
 flashlight.tscn::PackedScene::5503211393132175389::1790171533::0::1::::<><><>0<>0<><>::uid://dk05dnogxlgpb::::res://Objects/Flashlight/flashlight.gd
-::res://Player/::1790175755
-player.gd::GDScript::7814203960739331645::1790175755::0::1::::<>CharacterBody3D<><>0<>0<><>::
-::res://Scenes/::1790176065
+::res://Player/::1790188872
+player.gd::GDScript::7814203960739331645::1790188872::0::1::::<>CharacterBody3D<><>0<>0<><>::
+::res://Scenes/::1790188876
+backpack.tscn::PackedScene::3743111080364753625::1790186341::0::1::::<><><>0<>0<><>::
 csg_box_3d.gd::GDScript::2371657255899577589::1790175905::0::1::::<>CSGBox3D<><>0<>0<><>::
-heal.gd::GDScript::3938298927499827795::1790175959::0::1::::<>CSGBox3D<><>0<>0<><>::
-label.gd::GDScript::4737616064468903964::1790171533::0::1::::<>Label<><>0<>0<><>::
+heal.gd::GDScript::3938298927499827795::1790178160::0::1::::<>CSGBox3D<><>0<>0<><>::
+label.gd::GDScript::4737616064468903964::1790186341::0::1::::<>Label<><>0<>0<><>::
+lives.gd::GDScript::1805887479517843634::1790188203::0::1::::<>Label<><>0<>0<><>::
 main_menu.tscn::PackedScene::7223114828591567181::1790171533::0::1::::<><><>0<>0<><>::
-player.tscn::PackedScene::1607138968304395816::1790175755::0::1::::<><><>0<>0<><>::uid://djli2d8plrrqb::::res://Player/player.gd
+player.tscn::PackedScene::1607138968304395816::1790188533::0::1::::<><><>0<>0<><>::uid://djli2d8plrrqb::::res://Player/player.gd<>uid://btlgq0p4qmcej::::res://Scenes/backpack.tscn<>uid://b4nvp8fl284re::::res://Objects/Blood Vial/Blood Vial_DefaultMaterial_BaseColor.jpg<>uid://1n12gfk8vcmp::::res://Objects/Blood Vial/Blood Vial_DefaultMaterial_Metallic.jpg-DefaultMaterial_Roughness.png<>uid://bu5lrkjtp61vm::::res://Objects/Blood Vial/Blood Vial_DefaultMaterial_Normal.jpg<>uid://comt7jf4rghy8::::res://Objects/Blood Vial/Blood Vial_garage_floor_rough_4k.png<>uid://bphqak8h84dve::::res://Objects/Blood Vial/Blood Vial_garage_floor_rough_4k_2.png<>uid://c4ikrt5qyqa6e::::res://Objects/Blood Vial/Blood Vial_garage_floor_nor_gl_4k.jpg<>uid://ci80gjq28qb6q::::res://Objects/Blood Vial/blood_vial.gdshader<>uid://b8q63yeub02rw::::res://Scenes/label.gd<>uid://0y1x5urvum07::::res://Scenes/lives.gd
 playground.tscn::PackedScene::5306576566907723067::1790171533::0::1::::<><><>0<>0<><>::
-test.scn::PackedScene::8339293028778301964::1790176065::0::1::::<><><>0<>0<><>::uid://hpjwvvyj0gja::::res://icon.svg<>uid://djli2d8plrrqb::::res://Player/player.gd<>uid://b4nvp8fl284re::::res://Objects/Blood Vial/Blood Vial_DefaultMaterial_BaseColor.jpg<>uid://1n12gfk8vcmp::::res://Objects/Blood Vial/Blood Vial_DefaultMaterial_Metallic.jpg-DefaultMaterial_Roughness.png<>uid://bu5lrkjtp61vm::::res://Objects/Blood Vial/Blood Vial_DefaultMaterial_Normal.jpg<>uid://comt7jf4rghy8::::res://Objects/Blood Vial/Blood Vial_garage_floor_rough_4k.png<>uid://bphqak8h84dve::::res://Objects/Blood Vial/Blood Vial_garage_floor_rough_4k_2.png<>uid://c4ikrt5qyqa6e::::res://Objects/Blood Vial/Blood Vial_garage_floor_nor_gl_4k.jpg<>uid://ci80gjq28qb6q::::res://Objects/Blood Vial/blood_vial.gdshader<>uid://b8q63yeub02rw::::res://Scenes/label.gd<>uid://ckn2c8jv60r3j::::res://Objects/Flashlight/flashlight.tscn<>uid://813334qx8vv6::::res://Scenes/csg_box_3d.gd<>uid://bwd0hcnabvrax::::res://Scenes/heal.gd
+test.scn::PackedScene::8339293028778301964::1790188876::0::1::::<><><>0<>0<><>::uid://hpjwvvyj0gja::::res://icon.svg<>uid://w5rlxwwkfoom::::res://Scenes/player.tscn<>uid://ckn2c8jv60r3j::::res://Objects/Flashlight/flashlight.tscn<>uid://813334qx8vv6::::res://Scenes/csg_box_3d.gd<>uid://bwd0hcnabvrax::::res://Scenes/heal.gd
 ::res://Shaders/::1790171533
 Highlight.tres::ShaderMaterial::6199777039963706194::1790171533::0::1::::<><><>0<>0<><>::uid://doonf5ft3u2sr::::res://Objects/Outline.gdshader
 Interaction Shader.tres::ShaderMaterial::8557826871140622386::1790171533::0::1::::<><><>0<>0<><>::uid://cuqxue35n5mya::::res://Objects/Interaction.gdshader

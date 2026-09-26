@@ -1,5 +1,7 @@
 extends CharacterBody3D
 
+# AYHEM MOUSH RAJEL
+
 #------Camera------#
 @onready var head: Node3D = $Head
 @onready var eyes: Node3D = $Head/LeanArm/Eyes
@@ -11,6 +13,7 @@ extends CharacterBody3D
 @onready var crouching_collision_shape: CollisionShape3D = $CrouchingCollisionShape
 @onready var interactable_area: Area3D = $"Interactable Area"
 var current_focused_object = null
+@onready var backpack: Node3D = $Head/LeanArm/Eyes/Camera3D/backpack
 
 #------Raycasts------#
 @onready var standup_check: RayCast3D = $StandupCheck
@@ -43,7 +46,7 @@ var input_dir: Vector2 = Vector2.ZERO
 var direction: Vector3 = Vector3.ZERO
 const crouching_depth: float = -0.9
 const jump_height: float = 0.501
-var jump_velocity: float = 0.0
+var jump_velocity: float = 1.0
 
 #------Player Settings------#
 var lerp_speed: float = 10.0
@@ -52,6 +55,7 @@ var Base_FOV: float = 90.0
 var max_hp: int = 100
 var hp: int = 100
 var health_drop_speed: float = 10.0
+var lives: int = 5 # just Test
 
 #------Head bobbing variables------#
 const head_bobbing_sprinting_speed: float = 14.0
@@ -70,7 +74,6 @@ var target_arm_x: float = 0.0
 var target_rot_z: float = 0.0
 var lean_distance: float = 0.4
 var lean_tilt: float = 12.0
-
 var in_pause: bool = false
 
 #------State machine------#
@@ -80,8 +83,8 @@ enum PlayerState {
 	CROUCHING,
 	WALKING,
 	SPRINTING,
-	SPRINTING_AND_JUMPING,
-	AIR,
+	JUMPING,
+	SPRINTING_JUMPING
 }
 
 var player_state: PlayerState = PlayerState.IDLE_STAND
@@ -116,6 +119,13 @@ func _setup_blood_vial() -> void:
 			else:
 				push_warning("LiquidCylinder does not have a ShaderMaterial assigned in slot 0!")
 
+
+func is_dead() -> bool:
+	return hp <= 0 or position.y <= -50
+	
+func is_game_over() -> bool:
+	return lives == 0
+
 func _input(event: InputEvent) -> void:
 	if Input.is_action_just_pressed("Esc"):
 		# get_tree().quit()
@@ -133,7 +143,7 @@ func _input(event: InputEvent) -> void:
 			target_slosh.x = clamp(target_slosh.x, -max_slosh_angle, max_slosh_angle)
 			target_slosh.y = clamp(target_slosh.y, -max_slosh_angle, max_slosh_angle)
 		
-		if Input.is_action_just_pressed("Interact"):
+		if Input.is_action_pressed("Interact"):
 			if interaction_ray.is_colliding():
 				var target = interaction_ray.get_collider()
 				
@@ -141,14 +151,26 @@ func _input(event: InputEvent) -> void:
 					if target.has_method("interact"):
 						target.interact()
 
+# This is also for testing
+func reset_player() -> void:
+	position.x = -0.47
+	position.y = 0
+	position.z = 0.505
+	hp = 100
+
 func _physics_process(delta: float) -> void:
+	if is_dead():
+		reset_player()
+		if lives > 0: lives -= 1
+	
 	if in_pause:
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+		backpack.show()
 	else:
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-	
+		backpack.hide()
+			
 		input_dir = Input.get_vector("Strafe L", "Strafe R", "Forward", "Backward")
-		
 		_update_focused_object()
 		updatePlayerState(delta)
 		updateCamera(delta)
@@ -170,14 +192,12 @@ func _physics_process(delta: float) -> void:
 		
 		if not is_on_floor():
 			if velocity.y >= 0:
-				velocity += get_gravity() * delta
-			else:
 				velocity += get_gravity() * delta * 2.0
+			else:
+				velocity += get_gravity() * delta * 3.0
 		else:
-			if PlayerState.SPRINTING: player_state = PlayerState.SPRINTING_AND_JUMPING
 			if Input.is_action_just_pressed("Jump"):
-				velocity.y = jump_velocity
-				#camera_3d.fov = Base_FOV * 1.15
+				velocity.y = jump_velocity*1.5
 
 		var target_dir = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 		if target_dir != Vector3.ZERO:
@@ -188,6 +208,21 @@ func _physics_process(delta: float) -> void:
 			velocity.z = 0.0
 
 		move_and_slide()
+		#print(player_state)
+		
+func move_liquide(amplitude: float, delta: float) -> void:
+	var passive_wave := Vector2.ZERO
+	passive_wave.x = cos(head_bobbing_index) * amplitude
+	passive_wave.y = sin(head_bobbing_index * 2.0) * (amplitude * 0.6)
+
+	target_slosh = target_slosh.move_toward(Vector2.ZERO, sqrt(slosh_recovery_speed * delta))
+
+	var combined_target := target_slosh + passive_wave
+	combined_target.x = clamp(combined_target.x, -max_slosh_angle, max_slosh_angle)
+	combined_target.y = clamp(combined_target.y, -max_slosh_angle, max_slosh_angle)
+
+	current_slosh = current_slosh.lerp(combined_target, sqrt(slosh_lerp_speed * delta))
+	liquid_material.set_shader_parameter("slosh_angle", current_slosh)
 
 func updateBloodVial(delta: float) -> void:
 	if not liquid_material:
@@ -196,42 +231,32 @@ func updateBloodVial(delta: float) -> void:
 	var health_ratio: float = clamp(float(hp) / float(max_hp), 0.0, 1.0)
 	liquid_material.set_shader_parameter("health_ratio", health_ratio)
 
-
-	var passive_wave = Vector2.ZERO
+	var slosh_amplitude: float = 0.20
+	
+	if Input.is_action_pressed("Crouch"):
+		move_liquide(slosh_amplitude, delta)
 
 	if moving and is_on_floor():
-		var slosh_amplitude: float = 0.20
-
 		match player_state:
 			PlayerState.CROUCHING:
-				slosh_amplitude = 0.06  
+				slosh_amplitude = 0.06
 			PlayerState.WALKING:
-				slosh_amplitude = 0.22 
+				slosh_amplitude = 0.22
 			PlayerState.SPRINTING:
-				slosh_amplitude = 0.48  
-
-
-		passive_wave.x = cos(head_bobbing_index) * slosh_amplitude
-		passive_wave.y = sin(head_bobbing_index * 2.0) * (slosh_amplitude * 0.6)
-
-
-	target_slosh = target_slosh.move_toward(Vector2.ZERO, sqrt(slosh_recovery_speed * delta))
-
-
-	var combined_target = target_slosh + passive_wave
-	combined_target.x = clamp(combined_target.x, -max_slosh_angle, max_slosh_angle)
-	combined_target.y = clamp(combined_target.y, -max_slosh_angle, max_slosh_angle)
-
-	current_slosh = current_slosh.lerp(combined_target, sqrt(slosh_lerp_speed * delta))
-	liquid_material.set_shader_parameter("slosh_angle", current_slosh)
+				slosh_amplitude = 0.48
+				
+	move_liquide(slosh_amplitude, delta)
 
 func updatePlayerState(delta: float) -> void:
 	if hp > max_hp: hp = max_hp
-	
 	moving = (input_dir != Vector2.ZERO)
 	
 	if not is_on_floor():
-		player_state = PlayerState.AIR
+		if current_speed > walking_speed:
+			player_state = PlayerState.SPRINTING_JUMPING
+		else:
+			player_state = PlayerState.JUMPING
+		
 	else:
 		if Input.is_action_pressed("Crouch"):
 			player_state = PlayerState.IDLE_CROUCH if not moving else PlayerState.CROUCHING
@@ -273,13 +298,13 @@ func updateCamera(delta: float) -> void:
 			target_fov = Base_FOV * 0.95
 			target_intensity = head_bobbing_crouching_intensity
 			bob_frequency = head_bobbing_crouching_speed
-			
+		
 		PlayerState.IDLE_CROUCH:
 			head.position.y = lerp(head.position.y, 1.8 + crouching_depth, speed)
 			target_fov = Base_FOV * 0.95
 			target_intensity = 0.0
 			
-		PlayerState.IDLE_STAND:
+		PlayerState.IDLE_STAND, PlayerState.JUMPING:
 			head.position.y = lerp(head.position.y, 1.8, speed)
 			target_fov = Base_FOV
 			target_intensity = 0.0
@@ -290,7 +315,7 @@ func updateCamera(delta: float) -> void:
 			target_intensity = head_bobbing_walking_intensity
 			bob_frequency = head_bobbing_walking_speed
 			
-		PlayerState.SPRINTING, PlayerState.SPRINTING_AND_JUMPING:
+		PlayerState.SPRINTING, PlayerState.SPRINTING_JUMPING:
 			head.position.y = lerp(head.position.y, 1.8, speed)
 			target_fov = Base_FOV * 1.15
 			target_intensity = head_bobbing_sprinting_intensity

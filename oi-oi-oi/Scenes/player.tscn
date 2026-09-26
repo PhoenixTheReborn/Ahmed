@@ -10,6 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://c4ikrt5qyqa6e" path="res://Objects/Blood Vial/Blood Vial_garage_floor_nor_gl_4k.jpg" id="7_7dp3o"]
 [ext_resource type="Shader" uid="uid://ci80gjq28qb6q" path="res://Objects/Blood Vial/blood_vial.gdshader" id="8_h4iuc"]
 [ext_resource type="Script" uid="uid://b8q63yeub02rw" path="res://Scenes/label.gd" id="9_fd4e3"]
+[ext_resource type="Script" uid="uid://0y1x5urvum07" path="res://Scenes/lives.gd" id="11_gymyn"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_f60y1"]
 
@@ -181,8 +182,18 @@ radius = 10.0
 [sub_resource type="LabelSettings" id="LabelSettings_pjxn1"]
 font_size = 102
 
+[sub_resource type="LabelSettings" id="LabelSettings_tx1dd"]
+font_size = 94
+font_color = Color(0.09411765, 0.09411765, 0.09411765, 1)
+
 [node name="Player" type="CharacterBody3D" unique_id=763214638 groups=["Player"]]
 script = ExtResource("1_v0iea")
+blood_vial_path = null
+mouse_slosh_sensitivity = null
+movement_slosh_intensity = null
+max_slosh_angle = null
+slosh_recovery_speed = null
+slosh_lerp_speed = null
 
 [node name="StandingCollisionShape" type="CollisionShape3D" parent="." unique_id=328115965]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
@@ -253,12 +264,23 @@ collision_mask = 3
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Interactable Area" unique_id=1718917717]
 shape = SubResource("SphereShape3D_6t5aa")
 
-[node name="Label" type="Label" parent="." unique_id=482339895]
+[node name="hp" type="Label" parent="." unique_id=482339895]
 offset_right = 572.52
 offset_bottom = 147.63
 scale = Vector2(1.08, 1.08)
 label_settings = SubResource("LabelSettings_pjxn1")
 script = ExtResource("9_fd4e3")
+
+[node name="lives" type="Label" parent="." unique_id=1139638459]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -414.0
+offset_bottom = 137.0
+grow_horizontal = 0
+size_flags_horizontal = 8
+label_settings = SubResource("LabelSettings_tx1dd")
+script = ExtResource("11_gymyn")
 
 [connection signal="body_entered" from="Interactable Area" to="." method="_on_interactable_area_body_entered"]
 [connection signal="body_exited" from="Interactable Area" to="." method="_on_interactable_area_body_exited"]

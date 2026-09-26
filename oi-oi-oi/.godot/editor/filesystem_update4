@@ -1,5 +1,3 @@
-res://Scenes/player.tscn
-res://Player/player.gd
 res://Scenes/test.scn
-res://Scenes/heal.gd
-res://Scenes/backpack.tscn
+res://Objects/Blood Vial/blood_vial.gdshader
+res://Player/player.gd

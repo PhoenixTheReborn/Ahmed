@@ -8,8 +8,6 @@ uniform float fill_max_y = 0.05;
 
 
 uniform vec2 slosh_angle = vec2(0.0, 0.0);
-
-
 uniform vec4 color_full : source_color = vec4(0.0, 1.0, 0.2, 1.0);  
 uniform vec4 color_mid : source_color = vec4(1.0, 0.4, 0.0, 1.0);    
 uniform vec4 color_low : source_color = vec4(1.0, 0.0, 0.0, 1.0);      
