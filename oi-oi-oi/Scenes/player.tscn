@@ -188,12 +188,6 @@ font_color = Color(0.09411765, 0.09411765, 0.09411765, 1)
 
 [node name="Player" type="CharacterBody3D" unique_id=763214638 groups=["Player"]]
 script = ExtResource("1_v0iea")
-blood_vial_path = null
-mouse_slosh_sensitivity = null
-movement_slosh_intensity = null
-max_slosh_angle = null
-slosh_recovery_speed = null
-slosh_lerp_speed = null
 
 [node name="StandingCollisionShape" type="CollisionShape3D" parent="." unique_id=328115965]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)

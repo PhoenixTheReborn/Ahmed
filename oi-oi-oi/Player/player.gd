@@ -140,6 +140,7 @@ func is_game_over() -> bool:
 	return lives == 0
 
 func _input(event: InputEvent) -> void:
+	
 	if Input.is_action_just_pressed("Esc"):
 		# get_tree().quit()
 		in_pause = !in_pause
@@ -238,7 +239,6 @@ func _physics_process(delta: float) -> void:
 
 		# Capture fall speed before move_and_slide() zeroes it out on collision
 		var pre_move_y_velocity := velocity.y
-		
 		move_and_slide()
 		
 		# Landing detection

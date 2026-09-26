@@ -1,3 +1,9 @@
 res://Scenes/test.scn
 res://Objects/Blood Vial/blood_vial.gdshader
 res://Player/player.gd
+res://Scenes/main_menu.tscn
+res://Scenes/main_menu.gd
+res://Scenes/backpack.tscn
+res://Scenes/backpack.gd
+res://Shaders/outline.gdshader
+res://Scenes/player.tscn

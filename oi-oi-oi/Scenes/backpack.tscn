@@ -1,12 +1,29 @@
 [gd_scene format=3 uid="uid://btlgq0p4qmcej"]
 
+[ext_resource type="Script" uid="uid://bobocnch5qcno" path="res://Scenes/backpack.gd" id="1_ysvnq"]
+[ext_resource type="Shader" uid="uid://boi7h6ncqnq5m" path="res://Shaders/outline.gdshader" id="2_ibn6m"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_05x0t"]
+render_priority = 0
+shader = ExtResource("2_ibn6m")
+shader_parameter/outline_color = Color(0, 0, 0, 1)
+shader_parameter/outline_width = 7.0
+shader_parameter/constant_width = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pjxn1"]
+next_pass = SubResource("ShaderMaterial_05x0t")
+
 [sub_resource type="BoxMesh" id="BoxMesh_4rvbt"]
+material = SubResource("StandardMaterial3D_pjxn1")
 size = Vector3(0.69732666, 0.47784424, 0.66625977)
 
 [node name="backpack" type="Node3D" unique_id=1454249576]
+script = ExtResource("1_ysvnq")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=2094395745]
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D" unique_id=1069193067]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.1552734e-05, 0.5296055, 0.079956055)
 mesh = SubResource("BoxMesh_4rvbt")
+
+[connection signal="mouse_entered" from="StaticBody3D" to="." method="_on_static_body_3d_mouse_entered"]
